@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>登录</title>
+</head>
+<body>
+    <div>
+        <input type="text" name="user" placeholder="请输入用户名">
+        <input type="text" name="pass" placeholder="请输入密码">
+        <input type="text" name="ma">
+        <img src="/users/captcha" onclick={$(event.target).attr('src','/users/captcha?'+Math.random())}>
+        <button onclick="tiaozhuan(event)">提交</button>
+    </div>
+</body>
+</html>
+<script src="https://cdn.bootcss.com/jquery/3.4.1/jquery.min.js"></script>
+<script>
+    function tiaozhuan(event){
+        $.ajax({
+            url:'/users/login',
+            method:'post',
+            data:{
+                user:$("input").eq(0).val(),
+                pass:$("input").eq(1).val(),
+                ma:$("input").eq(2).val(),
+            },
+            success:function(res){
+                if(res.msg == '登录成功'){
+                    window.location.href='home.html'
+                }else{
+                    alert(res.msg)
+                }
+            }
+        })
+
+    }
+</script>

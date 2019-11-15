@@ -12,5 +12,11 @@
     "http-errors": "~1.6.3",
     "jade": "~1.11.0",
     "morgan": "~1.9.1"
+  },
+  "devDependencies": {
+    "connect-redis": "^4.0.3",
+    "ejs": "^2.7.2",
+    "express-session": "^1.17.0",
+    "redis": "^2.8.0"
   }
 }

@@ -1,0 +1,22 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>首页</title>
+    <script src="https://cdn.bootcss.com/jquery/3.4.1/jquery.min.js"></script>
+</head>
+<body>
+    <div id="box">
+        欢迎你回来：<span id="user"></span>
+    </div>
+</body>
+</html>
+<script>
+    $.ajax({
+        url:'/home',
+        success:function(res){
+            console.log(res);
+            $("#user").html(res.user.user)
+        }
+    })
+</script>
