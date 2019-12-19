@@ -9,6 +9,15 @@
     <div id="box">
         欢迎你回来：<span id="user"></span>
     </div>
+    <button onclick="logout()">退出</button>
+    <a href="./userList.html">用户列表页</a>
+
+    <!--上传头像-->
+    <div>
+        <img id="showFile" src="" />
+        <input type="file" id="uploadFile" name="file">
+        <button type="submit" id="submitBtn">上传图片</button>
+    </div>
 </body>
 </html>
 <script>
@@ -16,7 +25,42 @@
         url:'/home',
         success:function(res){
             console.log(res);
-            $("#user").html(res.user.user)
+            if(res.code==0){
+                window.location.href="/login.html"
+            }else{
+                $("#user").html(res.user.user)
+            }
+
         }
     })
+
+    $('#submitBtn').click(function(){
+        //html5处理ajax-post请求时的对象
+        var formData=new FormData();
+        //你可以先创建一个空的FormData对象,然后使用append()方法向该对象里添加字段
+        formData.append('file',$('#uploadFile')[0].files[0]);//第一张图片
+        $.ajax({
+            url:'/upload',
+            type:'post',
+            data:formData,
+            processData:false,
+            contentType:false
+        }).done(function(ret){ //ret服务器返回的图片本身
+            console.log(ret)
+            $('#showFile').attr('src','/upload/'+ret);  //返回的是服务器端图片存放的位置 和图片名
+        })
+    })
+
+    function logout(){
+        $.ajax({
+            url:'/logout',
+            type:'get',
+            success:function(res){
+
+                setTimeout(()=>{
+                    window.location.href='login.html'
+                },2000)
+            }
+        })
+    }
 </script>

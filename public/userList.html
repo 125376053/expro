@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+</head>
+<body>
+<div id="vue">
+    <ul>
+        <li v-for="(item,index) in list">
+            <p>
+                用户名：<span>{{item.user}}</span>
+                密码: <span>{{item.pass}}</span>
+                <button title="123456" @click="updatePass(item)">重置初始密码</button>
+                <button title="123456" @click="updatePass(item)">删除</button>
+                <a :href="'./userInfo.html?id='+item.id">用户详细</a>
+            </p>
+        </li>
+    </ul>
+
+    <p>----------------------------</p>
+
+    <ul>
+        <li v-for="(item,index) in list2">
+            <p>
+                用户名：<span>{{item.user}}</span>
+                密码: <span>{{item.pass}}</span>
+                <button title="123456" @click="updatePass(item)">重置初始密码</button>
+                <button title="123456" @click="updatePass(item)">删除</button>
+                <a :href="'./userInfo.html?id='+item.id">用户详细</a>
+            </p>
+        </li>
+        <div>
+            <span @click="page--" v-if="page>1">上一页</span>
+            <span v-for="item in pages" @click="page=item">
+                <b>第{{item}}页&nbsp;&nbsp;</b>
+            </span>
+            <span @click="page++" v-if="page<pages">下一页</span>
+            &nbsp;当前是第{{page}}页
+
+        </div>
+    </ul>
+
+</div>
+</body>
+</html>
+<script src="https://cdn.bootcss.com/jquery/3.4.1/jquery.min.js"></script>
+<script src="https://cdn.bootcss.com/vue/2.6.10/vue.min.js"></script>
+<script>
+    new Vue({
+        el: '#vue',
+        data: {
+            list: [],
+            list2:[],
+            page:1,
+            limit:5,
+            pages:0
+        },
+        mounted(){
+            //this.getData()
+            this.getData2()
+        },
+        watch:{
+            page(){
+                this.getData2()
+            }
+        },
+        methods: {
+            getData(){
+                $.ajax({
+                    url: '/users/userList',
+                    method: 'get',
+                    data: {},
+                    success: (res) => {
+                        console.log(res);
+                        this.list = res.data
+                    }
+                })
+            },
+            getData2(){
+                $.ajax({
+                    url: '/list',
+                    method: 'get',
+                    data: {
+                        page:this.page,
+                        limit:this.limit
+                    },
+                    success: (res) => {
+                        console.log(res);
+                        this.list2 = res.data
+                        this.pages = res.pages
+                    }
+                })
+            },
+            updatePass(item){
+                $.ajax({
+                    url: '/users/updatePass',
+                    method: 'post',
+                    data: {
+                        id:item.id
+                    },
+                    success: (res) => {
+                        console.log(res)
+                        this.getData()
+                    }
+                })
+            },
+            updatePass(item){
+                $.ajax({
+                    url: '/users/remove',
+                    method: 'post',
+                    data: {
+                        id:item.id
+                    },
+                    success: (res) => {
+                        console.log(res)
+                        this.getData()
+                    }
+                })
+            }
+        }
+    })
+</script>

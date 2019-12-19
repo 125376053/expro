@@ -21,7 +21,7 @@ router.get('/captcha',function(req,res){
 
 router.post('/login', async function(req, res, next) {
     let {user,pass,ma} = req.body;
-    console.log(user, pass,ma);
+    //console.log(user, pass,ma);
 
     if(user && pass && ma){
         // 查找用户是否存在
@@ -32,15 +32,24 @@ router.post('/login', async function(req, res, next) {
         })
         // 没有用户时插入数据
         if(!user1){
+            console.log('创建的时候')
             let re = await model.create({
                 user,
                 pass:encryUtils.encrypt(pass) //对写入数据库的密码进行md5加密
             })
-            res.json({
-                code:1,
-                msg:'登录成功',
-                data:re
-            })
+            req.session.user = re.dataValues
+            if(ma.toUpperCase() == req.session.captcha.toUpperCase()){
+                res.json({
+                    code:1,
+                    msg:'登录成功'
+                })
+            }else{
+                res.json({
+                    code:0,
+                    msg:'验证码输入错误'
+                })
+            }
+            return
         }
 
         if(user1){
@@ -48,9 +57,8 @@ router.post('/login', async function(req, res, next) {
             // 查找密码的时候也要查找加密过的密码
             if(pass1 == encryUtils.encrypt(pass)){
                 req.session.user = user1.dataValues
-                console.log(req.session.user);
-
-                if(ma == req.session.captcha){
+                //console.log(req.session.user);
+                if(ma.toUpperCase() == req.session.captcha.toUpperCase()){
                     res.json({
                         code:1,
                         msg:'登录成功'
@@ -75,5 +83,50 @@ router.post('/login', async function(req, res, next) {
         })
     }
 });
+
+router.get('/userList',async (req,res)=>{
+    let data = await model.getAll()
+    res.json({
+        code:1,
+        msg:'',
+        data:data
+    })
+})
+
+router.post('/updatePass',async (req,res)=>{
+    console.log(req.body);
+    let id= req.body.id
+    let pass = await model.update(
+        {
+            pass:encryUtils.encrypt('123456')
+        },
+        {
+            where:{
+                id
+            }
+        }
+    )
+    console.log(pass);
+    res.json({
+        code:1,
+        msg:'',
+        data:'ok'
+    })
+})
+
+router.post('/remove',async (req,res)=>{
+    let id= req.body.id
+    let re = await model.remove({
+        where:{
+            id
+        }
+    })
+    console.log(re)
+    res.json({
+        code:1,
+        msg:'',
+        data:re
+    })
+})
 
 module.exports = router;

@@ -1,64 +1,59 @@
-var createError = require('http-errors');
 var express = require('express');
 var path = require('path');
-var cookieParser = require('cookie-parser');
-var logger = require('morgan');
 var bodyParser = require('body-parser')
-
+var url = require('url')
 const redis = require('redis')
-
-var client=redis.createClient(6379,'39.106.94.75',{
-    auth_pass:'123456'
+var client = redis.createClient(6379, '39.106.94.75', {
+    auth_pass: '123456'
 });
 
-var session = require('express-session');//session
+var session = require('express-session');
 var RedisStrore = require('connect-redis')(session);
-
-var indexRouter = require('./routes/index');
-var usersRouter = require('./routes/users');
 
 var app = express();
 
-app.use(logger('dev'));
-app.use(express.json());
-app.use(express.urlencoded({extended: false}));
-app.use(cookieParser());
 app.use(express.static(path.join(__dirname, 'public')));
 app.use(bodyParser.json());
-app.use(bodyParser.urlencoded({extended:true}));
-
+app.use(bodyParser.urlencoded({extended: true}));
 app.use(session({
     secret: 'zcj',
     resave: false,
     saveUninitialized: false,
     cookie: {
-        maxAge: 1000 * 60 * 60
+        maxAge:1000 //1000 * 60 * 60
     },
-    store:new RedisStrore({
+    store: new RedisStrore({
         client
     }),
 }));
 
+// 路由拦截中间件 注意不是匹配* 要放在session后面使用
+// 不需要登录的路由信息
+var notLogin = ['/', '/users/captcha', '/login.html', '/users/login','/logout']
+app.use(function (req, res, next) {
+    //console.log(req.session)
+    let urlObj = url.parse(req.url)
+    if(notLogin.indexOf(urlObj.pathname)>-1){
+        next()
+    }else{
+        console.log('----------------------------')
+        console.log(req.session.user);
+        if(req.session.user){
+            if(urlObj.pathname=='/login.html'){
+                res.redirect('/home.html')
+            }else{
+                next()
+            }
+        }else{
+            console.log('---没有session22222来这里----')
+            res.redirect('/login.html')
+        }
+    }
+})
+
+var indexRouter = require('./routes/index');
+var usersRouter = require('./routes/users');
 app.use('/', indexRouter);
 app.use('/users', usersRouter);
 
-app.set('view engine','html');//设置模板引擎 html
-app.set('views',path.resolve('views'));//指定模板的存放根目录
-app.engine('html',require('ejs').__express);//指定对于html类型的模板使用ejs方法来进行渲染
-
-app.use(function (req, res, next) {
-    next(createError(404));
-});
-
-
-app.use(function (err, req, res, next) {
-    res.locals.message = err.message;
-    res.locals.error = req.app.get('env') === 'development' ? err : {};
-    res.status(err.status || 500);
-    // res.render('error');
-    // 输入不存在的路由匹配到登录页
-    // res.redirect('/login.html')
-    res.send(err)
-});
-
-module.exports = app;
+app.listen(3001)
